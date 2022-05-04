@@ -7,29 +7,22 @@ terraform {
   }
 }
 
-provider "yandex" {
-  token     = var.iam_token
-  cloud_id  = var.yc_cloud_id
-  folder_id = var.yc_folder_id
-  zone      = "ru-central1-a"
-}
-
 resource "yandex_compute_instance" "vm-1" {
-  name = "chapter5-lesson2-ivan-dvorov"
+  name = var.yc_vm_name
 
   resources {
-    cores  = 2
-    memory = 2
+    cores  = var.yc_cores
+    memory = var.yc_memory
   }
 
   boot_disk {
     initialize_params {
-      image_id = "fd80qm01ah03dkqb14lc"
+      image_id = var.yc_image_id
     }
   }
 
   network_interface {
-    subnet_id = "e9bdi1h4rfet06lt0dkq"
+    subnet_id = var.yc_subnet_id
     nat       = true
   }
 
