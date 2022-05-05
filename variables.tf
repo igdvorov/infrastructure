@@ -16,7 +16,7 @@ variable "yc_folder_id" {
   description = "yc_folder_id"
 }
 
-variable "zones" {
+variable "yc_zones" {
   type        = map
   default     = { 
     "yc_a" = "ru-central1-a" 
