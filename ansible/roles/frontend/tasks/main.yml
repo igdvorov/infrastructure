@@ -1,0 +1,97 @@
+#Load vars frontend
+- name: Load vars
+  include_vars:
+      file: group_vars/frontend.yaml
+
+#Download Node script
+- name: Download Node Js script
+  become: true
+  get_url:
+    url: "{{ node_url }}"
+    dest: "{{ node_dir }}"
+    mode: 0755
+
+#Exec setup Node script
+- name : Execute setup NodeJs script
+  become: true
+  shell: "{{ node_dir }}"
+
+#Install NodeJS Apt
+- name: install NodeJS
+  become: true
+  apt:
+    update_cache: yes
+    name: nodejs
+
+#Install http-server
+- name: http-server install
+  become: true
+  npm:
+    name: http-server
+    global: yes
+
+#Adding the user frontend
+- name: Add service user
+  become: true
+  user:
+    name: "{{ frontend_user }}"
+    create_home: no
+    shell: /sbin/nologin
+
+#Create www-data dir
+- name:  create www-data dir
+  become: true
+  file: 
+    path: "{{ frontend_dir }}"
+    state: directory
+    owner: "{{ frontend_user }}"
+    group: "{{ frontend_user }}"
+    mode: 0755
+
+#Download frontend
+- name: frontend download
+  get_url:
+    url: "{{ nexus_frontend }}"
+    url_username: "{{ nexus_username }}"
+    url_password: "{{ nexus_password }}"
+    dest: "{{ frontend_tmp }}"
+
+  # Extracting the frontend archive 
+- name: Extract frontend archive
+  become: true
+  unarchive:
+    src: "{{ frontend_tmp }}"
+    dest: "{{ frontend_dir }}"
+    owner: "{{ frontend_user }}"
+    group: "{{ frontend_user }}"
+    remote_src: yes
+    extra_opts: "--strip-components=1"
+
+# Config Unit file
+- name : Config frontend unit file
+  become: true
+  template:
+    src: sausage-store-frontend.j2
+    dest: "{{ frontend_service_dir }}"
+
+#Start frontend service
+- name : frontend service is ready
+  become: true
+  service:
+    daemon_reload: yes
+    name: sausage-store-frontend
+    state: started
+    enabled: yes
+  when: ansible_service_mgr == "systemd"
+
+# Forward port 3543 to 443
+- iptables:
+    table: nat
+    chain: PREROUTING
+    in_interface: eth0
+    protocol: tcp
+    match: tcp
+    destination_port: "443"
+    jump: REDIRECT
+    to_ports: "3543"
+  become: true

@@ -1,0 +1,15 @@
+- name: sausage_backend_play
+  #The target hosts template is a group of hosts named terraform-vm
+  remote_user: ansible
+  hosts: terraform_vm
+  #List of ansible roles for backend servers
+  roles:
+    - backend
+
+- name: sausage_frontend_play
+  #The target hosts template is a group of hosts named terraform-vm
+  remote_user: ansible
+  hosts: terraform_vm
+  #List of ansible roles for frontend
+  roles:
+    - frontend

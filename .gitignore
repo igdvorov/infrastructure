@@ -3,3 +3,6 @@
 *.tfstate.*
 *.tfstate.backup
 *secret.tfvars
+*ansible/.vault
+*.DS_Store
+*ansible/.DS_Store

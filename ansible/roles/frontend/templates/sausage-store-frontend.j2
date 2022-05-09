@@ -1,0 +1,12 @@
+[Unit]
+Description=Sausage-store-frontend
+
+[Service]
+User={{ frontend_user }}
+WorkingDirectory={{ frontend_dir }}
+StandardOutput=append:{{ logs_dir }}/out-front.log
+Restart=on-failure
+ExecStart={{ http_server_dir }} ./public_html/ -p 3543 --proxy http://localhost:8080
+
+[Install]
+WantedBy=multi-user.target

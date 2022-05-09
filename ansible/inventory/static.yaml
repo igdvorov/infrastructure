@@ -1,0 +1,5 @@
+all:
+  children:
+    terraform_vm:
+      hosts:
+        51.250.79.155

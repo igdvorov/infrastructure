@@ -1,0 +1,98 @@
+#Load vars backend
+- name: Load vars
+  include_vars:
+      file: group_vars/backend.yaml
+
+#Installing the Java
+- name: Java install
+  become: true
+  apt:
+    update_cache: yes
+    name: openjdk-16-jdk
+
+#Installing the py3-pip
+- name: install py3-pip
+  become: true
+  apt: name=python3-pip
+
+#Istalling lxml pip
+- name: install lxml
+  pip: name=lxml
+
+#Adding the user jarservice
+- name: Add service user
+  become: true
+  user:
+    name: "{{ backend_user }}"
+    create_home: no
+    shell: /sbin/nologin
+
+# Add backend dir
+- name: add backend dir
+  become: true
+  file:
+    path: "{{ backend_dir }}"
+    state: directory
+    owner: "{{ backend_user }}"
+    group: "{{ backend_user }}"
+
+# Add logs dir
+- name : add logs dir
+  become: true
+  file: 
+    path: "{{ logs_dir }}"
+    state: directory
+
+#Add reports dir
+- name : add reports dir
+  become: true
+  file: 
+    path: "{{ reports_dir }}"
+    state: directory
+
+# Downloading the artifact from a private repository requiring authentication
+- maven_artifact:
+    group_id: com.yandex.practicum.devops
+    artifact_id: sausage-store
+    version: 1.0.0
+    repository_url: "{{ nexus_backend }}"
+    username: "{{ nexus_username }}"
+    password: "{{ nexus_password }}"
+    dest: "{{ backend_tmp }}"
+
+#chown jarfile
+- name: Change own jarfile
+  become: true
+  file:
+    path: "{{ backend_tmp }}"
+    owner: "{{ backend_user }}"
+    group: "{{ backend_user }}"
+
+#Copy jarfile
+- name: Move jar file 
+  become: true
+  # become_method: jarservice
+  command: mv "{{ backend_tmp }}" "{{ backend_dir }}"
+
+# Config Unit file
+- name : Config templating manages application settings using variables
+  become: true
+  template:
+    src: sausage-store-backend.j2
+    dest: "{{ backend_service_dir }}"
+
+#Daemon reload
+- name : Rereading systemd configuration
+  become: true
+  systemd:
+    daemon_reload: yes
+
+#Start backend service
+- name : backend service is ready
+  become: true
+  service:
+    daemon_reload: yes
+    name: sausage-store-backend
+    state: started
+    enabled: yes
+  when: ansible_service_mgr == "systemd"

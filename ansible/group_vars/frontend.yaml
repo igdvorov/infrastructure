@@ -1,0 +1,9 @@
+node_url: https://deb.nodesource.com/setup_16.x
+nexus_frontend: https://nexus.praktikum-services.ru/repository/sausage-store-dvorov-ivan-frontend/sausage-store/{{ frontend_ver }}/sausage-store-{{ frontend_ver }}.tar.gz
+node_dir: /opt/nodesetup
+frontend_dir: /var/www-data
+frontend_ver: 1.0.60562
+frontend_service_dir: /etc/systemd/system/sausage-store-frontend.service
+frontend_user: www-data
+frontend_tmp: /tmp/frontend.tar.gz
+http_server_dir: /usr/bin/http-server

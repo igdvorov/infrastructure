@@ -1,0 +1,8 @@
+nexus_backend: https://nexus.praktikum-services.ru/repository/sausage-store-dvorov-ivan-backend
+backend_dir: /var/jarservice
+backend_path: /var/jarservice/sausage-store.jar
+backend_service_dir: /etc/systemd/system/sausage-store-backend.service
+backend_user: jarservice
+reports_dir: /logs/reports
+backend_tmp: /tmp/sausage-store.jar
+java_dir: /usr/bin/java
