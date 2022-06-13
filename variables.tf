@@ -28,7 +28,7 @@ variable "yc_zones" {
 
 variable "yc_vm_name" {
   type        = string
-  default     = "chapter5-lesson2-ivan-dvorov"
+  default     = "simple-tf-name-ivan-dvorov"
   description = "description"
 }
 
