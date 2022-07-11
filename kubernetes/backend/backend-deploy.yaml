@@ -1,0 +1,90 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: backend
+  labels:
+    app: backend
+spec:
+  replicas: 2
+  # Стратегия развёртывания. Recreate — удалит сначала все старые Pod'ы 
+  # Есть и более гибкая стратегии, например, RollingUpdate, которая будет обновлять Pod'ы порциями  
+  strategy:
+    type: RollingUpdate
+  selector:
+    matchLabels:
+      app: backend
+  template:
+    metadata:
+      labels:
+        app: backend
+    spec:
+      containers:
+        - name: backend
+          image: gitlab.praktikum-services.ru:5050/yuki.isoya23/sausage-store/sausage-backend:latest
+          imagePullPolicy: Always
+          env:
+            - name: VAULT_HOST
+              value: '51.250.76.238'
+            - name: VAULT_PORT
+              value: '8200'
+            - name: VAULT_TOKEN
+              valueFrom:
+                secretKeyRef:
+                  name: vault
+                  key: vault_token
+          ports:
+            - name: backend
+              containerPort: 8080
+          # livenessProbe:
+          #   httpGet:
+          #     path: /actuator/health
+          #     port: 8080
+          #   initialDelaySeconds: 15
+          #   periodSeconds: 30
+          #   timeoutSeconds: 1
+          #   failureThreshold: 6
+      imagePullSecrets:
+        - name: docker-config-secret
+
+# apiVersion: v1
+# kind: Pod
+# metadata:
+#   name: backend
+#   labels:
+#     app: backend
+# spec:
+#   containers:
+#     - name: backend
+#       image: gitlab.praktikum-services.ru:5050/yuki.isoya23/sausage-store/sausage-backend:latest
+#       imagePullPolicy: IfNotPresent
+#       env:
+#         - name: VAULT_HOST
+#           value: '51.250.76.238'
+#         - name: VAULT_PORT
+#           value: '8200'
+#         - name: VAULT_TOKEN
+#           valueFrom:
+#             secretKeyRef:
+#               name: vault
+#               key: vault_token
+#       ports:
+#         - containerPort: 8080
+#       livenessProbe:
+#         # проверка живучести выполнит запрос HTTP GET       
+#         httpGet:
+#           # путь к запросу в HTTP-запросе          
+#           path: /actuator/health
+#           # порт, к которому должна подключиться проверка        
+#           port: 8080
+#         # перед исполнением перkuвой проверки подождать 15 секунд, пока стартанёт бэкенд          
+#         initialDelaySeconds: 15
+#         # период выполнения проверки
+#         periodSeconds: 30
+#         # максимальное время выполнения проверки (по умолчанию 1 раз)
+#         timeoutSeconds: 1
+#         # сколько раз пробовать попытку, если она провалилась (по умолчанию 1 раз)
+#         failureThreshold: 6
+#   # чтобы кубер мог скачивать образы из нашего GitLab Registry  
+#   imagePullSecrets:
+#     - name: docker-config-secret
