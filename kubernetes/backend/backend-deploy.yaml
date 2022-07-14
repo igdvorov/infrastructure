@@ -6,11 +6,15 @@ metadata:
   labels:
     app: backend
 spec:
-  replicas: 2
+  replicas: 4
+  revisionHistoryLimit: 15
   # Стратегия развёртывания. Recreate — удалит сначала все старые Pod'ы 
   # Есть и более гибкая стратегии, например, RollingUpdate, которая будет обновлять Pod'ы порциями  
   strategy:
     type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 20%
+      maxSurge: 1 
   selector:
     matchLabels:
       app: backend
@@ -23,6 +27,13 @@ spec:
         - name: backend
           image: gitlab.praktikum-services.ru:5050/yuki.isoya23/sausage-store/sausage-backend:latest
           imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: 0.1
+            limits:
+              memory: "256Mi"
+              cpu: 0.4
           env:
             - name: VAULT_HOST
               value: '51.250.76.238'
@@ -36,17 +47,40 @@ spec:
           ports:
             - name: backend
               containerPort: 8080
-          # livenessProbe:
-          #   httpGet:
-          #     path: /actuator/health
-          #     port: 8080
-          #   initialDelaySeconds: 15
-          #   periodSeconds: 30
-          #   timeoutSeconds: 1
-          #   failureThreshold: 6
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8080
+            initialDelaySeconds: 15
+            periodSeconds: 30
+            timeoutSeconds: 1
+            failureThreshold: 6
       imagePullSecrets:
         - name: docker-config-secret
-
+        
+---
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: backend
+spec:
+  targetRef:
+    apiVersion: "apps/v1"
+    kind: Deployment
+    name: backend
+  updatePolicy:
+    updateMode: "Auto"
+  resourcePolicy:
+    containerPolicies:
+      - containerName: "*"
+        minAllowed:
+          cpu: 0m
+          memory: 0Mi
+        maxAllowed:
+          cpu: 1
+          memory: 250Mi
+        controlledResources: ["cpu", "memory"]
+        controlledValues: RequestsAndLimits 
 # apiVersion: v1
 # kind: Pod
 # metadata:

@@ -7,6 +7,7 @@ metadata:
     app: backend-report
 spec:
   replicas: 1
+  revisionHistoryLimit: 15
   # Стратегия развёртывания. Recreate — удалит сначала все старые Pod'ы 
   # Есть и более гибкая стратегии, например, RollingUpdate, которая будет обновлять Pod'ы порциями  
   strategy:
@@ -23,6 +24,13 @@ spec:
         - name: backend-report
           image: gitlab.praktikum-services.ru:5050/yuki.isoya23/sausage-store/sausage-backend-report:latest
           imagePullPolicy: Always
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: 0.1
+            limits:
+              memory: "256Mi"
+              cpu: 0.4
           env:
             - name: VAULT_HOST
               value: '51.250.76.238'
@@ -46,3 +54,25 @@ spec:
           #   failureThreshold: 6
       imagePullSecrets:
         - name: docker-config-secret
+
+---
+apiVersion: autoscaling/v2beta2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: backend-report-hpa
+  labels:
+    app: backend-report-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: backend-report
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 75

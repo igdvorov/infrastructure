@@ -26,6 +26,8 @@ spec:
           volumeMounts:
             - name: nginx-conf
               mountPath: /etc/nginx/conf.d/
+      nodeSelector:
+        app: frontend
       volumes:
         - name: nginx-conf
           configMap:
