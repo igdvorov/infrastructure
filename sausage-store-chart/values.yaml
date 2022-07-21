@@ -1,0 +1,91 @@
+frontend:
+  image: gitlab.praktikum-services.ru:5050/yuki.isoya23/sausage-store/sausage-frontend
+  fqdn: dvorov-ivan-04.k8s.praktikum-services.tech
+  imagePullPolicy: Always
+  replicas: 1
+  revisionHistoryLimit: 15
+  strategy:
+    type: RollingUpdate
+  service:
+    port: 80
+    protocol: TCP
+    targetPort: 80
+    type: ClusterIP
+  configMap:
+    name: nginx-conf
+
+backend:
+  image: gitlab.praktikum-services.ru:5050/yuki.isoya23/sausage-store/sausage-backend
+  replicas: 3
+  imagePullPolicy: Always
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: 0.1
+    limits:
+      memory: "750Mi"
+      cpu: 1
+  ports:
+    containerPort: 8080
+  livenessProbe:
+    httpGet:
+      path: /actuator/health
+      port: 8080
+    initialDelaySeconds: 15
+    periodSeconds: 30
+    timeoutSeconds: 1
+    failureThreshold: 6
+  revisionHistoryLimit: 15
+  strategy:
+    type: RollingUpdate
+    RollingUpdate:
+      maxUnavailable: 20%
+      maxSurge: 1 
+  vault_host: 51.250.76.238
+  vault_port: 8200
+
+  service:
+    type: ClusterIP
+    port: 8080
+    protocol: TCP
+    targetPort: 8080
+
+  vpa:
+    resourcePolicy:
+      minAllowed:
+        cpu: 0m
+        memory: 0Mi
+      maxAllowed:
+        cpu: 1
+        memory: 750Mi
+
+backend-report:
+  replicas: 1
+  image: gitlab.praktikum-services.ru:5050/yuki.isoya23/sausage-store/sausage-backend-report
+  revisionHistoryLimit: 15
+  strategy:
+    type: RollingUpdate
+  imagePullPolicy: Always
+  resources:
+    requests:
+      memory: "64Mi"
+      cpu: 0.1
+    limits:
+      memory: "256Mi"
+      cpu: 0.4
+  vault_host: 51.250.76.238
+  vault_port: 8200
+  ports:
+    containerPort: 8081
+  minReplicas: 1
+  maxReplicas: 5
+  resource:
+    name: cpu
+    target: Utilization
+    averageUtilization: 75
+  service:
+    type: ClusterIP
+    ports:
+      port: 8081
+      protocol: TCP
+      targetPort: 8081

@@ -3,23 +3,24 @@ stages:
 
 k8s-deploy:
   stage: deploy
-  image: docker:20.10.12-dind
+  image: alpine/k8s:1.22.10
   only:
     changes: #как только происходит изменение в папке kubernetes, запускается дочерний пайплайн, который лежит в этой папке
-    - kubernetes/**/*
+    # - kubernetes/**/*
+    - sausage-store-chart/**/*
   script:
-    - apk add curl
-    - curl -LO https://storage.googleapis.com/kubernetes-release/release/`curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt`/bin/linux/amd64/kubectl
-    - chmod +x ./kubectl
-    - mv ./kubectl /usr/local/bin/kubectl
+    - helm package sausage-store-chart
+    - curl -v -u $NEXUS_USER:$NEXUS_PASS $NEXUS_HELM_REPO --upload-file sausage-store-chart-1.0.8.tgz
+    - helm repo add nexus $NEXUS_HELM_REPO --username $NEXUS_USER --password $NEXUS_PASS
+    - helm repo update
     - mkdir -p ~/.kube/
     - echo "$K8S_CONFIG" >> ~/.kube/config
-    - cd kubernetes
-    - kubectl apply -f backend
-    - sleep 16
-    - kubectl apply -f frontend
-    - sleep 10
-    - kubectl apply -f backend-reports
+    - |
+      helm upgrade --install sausage-store \
+      --set environment=test \
+      --set fqdn=dvorov-ivan-04.k8s.praktikum-services.tech \
+      --atomic --timeout 1m \
+      nexus/sausage-store-chart
     - rm -rf ~/.kube
   environment:
     name: staging
