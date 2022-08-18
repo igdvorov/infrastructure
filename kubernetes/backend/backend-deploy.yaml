@@ -5,8 +5,8 @@ metadata:
   name: backend
   labels:
     app: backend
-spec:
-  replicas: 2
+spec: 
+  replicas: 1
   # Стратегия развёртывания. Recreate — удалит сначала все старые Pod'ы 
   # Есть и более гибкая стратегии, например, RollingUpdate, которая будет обновлять Pod'ы порциями  
   strategy:

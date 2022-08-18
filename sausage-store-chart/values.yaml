@@ -18,6 +18,10 @@ backend:
   image: gitlab.praktikum-services.ru:5050/yuki.isoya23/sausage-store/sausage-backend
   replicas: 3
   imagePullPolicy: Always
+  annotations: 
+    prometheus.io/path: /actuator/prometheus
+    prometheus.io/port: "8080"
+    prometheus.io/scrape: "true" 
   resources:
     requests:
       memory: "64Mi"
