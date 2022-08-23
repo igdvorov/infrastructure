@@ -13,8 +13,6 @@ spec:
       app: frontend
   template:
     metadata:
-      annotations:
-{{ toYaml .Values.annotations | indent 8}}
       labels:
         app: frontend
     spec:

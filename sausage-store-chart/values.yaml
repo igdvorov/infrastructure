@@ -2,10 +2,6 @@ frontend:
   image: gitlab.praktikum-services.ru:5050/yuki.isoya23/sausage-store/sausage-frontend
   fqdn: dvorov-ivan-04.k8s.praktikum-services.tech
   imagePullPolicy: Always
-  annotations: 
-    prometheus.io/path: /actuator/prometheus
-    prometheus.io/port: "8080"
-    prometheus.io/scrape: "true" 
   replicas: 1
   revisionHistoryLimit: 15
   strategy:
@@ -20,7 +16,7 @@ frontend:
 
 backend:
   image: gitlab.praktikum-services.ru:5050/yuki.isoya23/sausage-store/sausage-backend
-  replicas: 1
+  replicas: 3
   imagePullPolicy: Always
   annotations: 
     prometheus.io/path: /actuator/prometheus
@@ -74,10 +70,6 @@ backend-report:
   strategy:
     type: RollingUpdate
   imagePullPolicy: Always
-  annotations: 
-    prometheus.io/path: /actuator/prometheus
-    prometheus.io/port: "8080"
-    prometheus.io/scrape: "true" 
   resources:
     requests:
       memory: "64Mi"

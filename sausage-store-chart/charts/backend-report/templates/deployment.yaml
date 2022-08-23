@@ -23,8 +23,6 @@ spec:
       app: {{ .Chart.Name }}
   template:
     metadata:
-      annotations:
-{{ toYaml .Values.annotations | indent 8}}
       labels:
         app: {{ .Chart.Name }}
     spec:
